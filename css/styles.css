@@ -1,27 +1,40 @@
 
 table.mcTable {
   border-collapse: collapse;
-  /*border: 0.5px solid lightgray;*/
-}
-
-.mcTable td + td,
-.mcTable th + th {
-  border-left: 0.5px dotted darkgray;
-}
-.mcTable tr + tr {
-  border-top: 0.5px dotted darkgray;
+  /*border: 0.5px solid #666;*/
 }
 
 .mcTable td {
+  border: 0.5px solid #666;
+}
+
+.mcTable td,
+.mcTable th {
   padding-left: 0.5ch;
   padding-right: 0.5ch;
-  max-width: 7ch;
-  min-width: 7ch;
+  max-width: 8ch;
+  min-width: 8ch;
+}
+
+.mcHeaderWeekday {
+  text-align: right;
+  margin-bottom: 1em;
+  border-bottom: 1px solid #666;
 }
 
 .mcCalendarDay {
-  text-align: right;
   margin-bottom: 0.5em;
+  margin-right: 0.25em;
+  text-align: right;
+}
+
+.mcToday {
+  background-color: #666;
+  border-radius: 1em;
+  color: #ffffff;
+  line-height: 1.1em;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
 }
 
 .mcEvent {
