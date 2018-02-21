@@ -5,8 +5,6 @@ class DomBuilder {
     this.config = config;
     this.translate = translate;
 
-    this.month = 3;
-
     this.events = this.generateFakeData();
   }
 
@@ -37,8 +35,13 @@ class DomBuilder {
   getTableBody() {
     let tBody = document.createElement("tbody");
 
-    for (let i = 0; i < 5; i++) {
-      let row = this.getCalendarRow(i);
+    let today = moment();
+
+    for (let i = 0; i < this.config.weeksInFuture; i++) {
+      let referenceDay = today.clone().add(7 * i, "days");
+      let startDate = referenceDay.clone().startOf("week");
+
+      let row = this.getCalendarRow(startDate);
       tBody.appendChild(row);
     }
 
@@ -62,29 +65,16 @@ class DomBuilder {
   }
 
 
-  getCalendarRow(weekInMonth) {
-    let startOfMonth = moment().month(this.month - 1).startOf("month");
-    let endOfMonth = moment().month(this.month - 1).endOf("month");
-    let monthStartsAtDay = startOfMonth.weekday();
-    let lastDayOfMonth = endOfMonth.date();
-
+  getCalendarRow(startDate) {
     let row = document.createElement("tr");
 
     for (let i = 0; i < 7; i++) {
       let cell = document.createElement("td");
-      let dayDiv = document.createElement("div");
-      dayDiv.className = "mcCalendarDay bright";
+      let currentDate = startDate.clone().add(i, "days");
+      let dayDiv = this.getDayDiv(currentDate);
 
-      let currentDay = i + weekInMonth * 7;
-      let normalizedDay = currentDay - monthStartsAtDay + 1;
-
-      if (currentDay >= monthStartsAtDay && normalizedDay <= lastDayOfMonth) {
-        dayDiv.innerHTML = normalizedDay;
-        cell.appendChild(dayDiv);
-
-        let date = startOfMonth.clone().add(normalizedDay - 1, "days");
-        cell.appendChild(this.getEventsForDay(date));
-      }
+      cell.appendChild(dayDiv);
+      cell.appendChild(this.getEventsForDay(currentDate));
 
       row.appendChild(cell);
     }
@@ -93,16 +83,42 @@ class DomBuilder {
   }
 
 
+  getDayDiv(date) {
+    let dayDiv = document.createElement("div");
+    dayDiv.className = "mcCalendarDay";
+
+    let today = moment();
+    let startOfMonth = date.clone().startOf("month");
+
+    let day = date.isSame(startOfMonth, "day") ? date.format("DD. MMM") : date.format("D");
+    let cssClass = date.isBefore(today, "day") ? " dimmed" : " bright";
+
+    dayDiv.className += cssClass;
+
+    if (date.isSame(today, "day")) {
+      let daySpan = document.createElement("span");
+      daySpan.className = " mcToday";
+      daySpan.innerHTML = day;
+      dayDiv.appendChild(daySpan);
+
+    } else {
+      dayDiv.innerHTML = day;
+    }
+
+    return dayDiv;
+  }
+
+
   getEventsForDay(date) {
     let result = document.createElement("div");
 
     let eventDiv = document.createElement("div");
     eventDiv.className = "mcEvent";
-    eventDiv.innerHTML = this.getEventName(date);
+    eventDiv.innerHTML = this.getEventInfo(date, "name");
 
     let locationDiv = document.createElement("div");
     locationDiv.className = "mcLocation dimmed";
-    locationDiv.innerHTML = this.getEventLocation(date);
+    locationDiv.innerHTML = this.getEventInfo(date, "location");
 
     result.appendChild(eventDiv);
     result.appendChild(locationDiv);
@@ -111,22 +127,11 @@ class DomBuilder {
   }
 
 
-  getEventName(date) {
+  getEventInfo(date, key) {
     let dateKey = date.format("DD.MM.YYYY");
 
     if (this.events[dateKey]) {
-      return this.events[dateKey].name;
-    } else {
-      return "&nbsp;";
-    }
-  }
-
-
-  getEventLocation(date) {
-    let dateKey = date.format("DD.MM.YYYY");
-
-    if (this.events[dateKey]) {
-      return this.events[dateKey].location;
+      return this.events[dateKey][key];
     } else {
       return "&nbsp;";
     }

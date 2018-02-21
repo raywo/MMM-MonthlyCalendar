@@ -7,7 +7,10 @@ Module.register("MMM-MonthlyCalendar", {
     // Module misc
     name: "MMM-MonthlyCalendar",
     hidden: false,
-    updatesEvery: 120         // How often should the table be updated in s?
+    updatesEvery: 120,         // How often should the table be updated in s?
+
+    // user definable
+    weeksInFuture: 10
   },
 
 
