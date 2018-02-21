@@ -1,22 +1,25 @@
 
 table.mcTable {
   border-collapse: collapse;
-  /*border: 0.5px solid lightgray;*/
-}
-
-.mcTable td + td,
-.mcTable th + th {
-  border-left: 0.5px dotted darkgray;
-}
-.mcTable tr + tr {
-  border-top: 0.5px dotted darkgray;
+  /*border: 0.5px solid #666;*/
 }
 
 .mcTable td {
+  border: 0.5px solid #666;
+}
+
+.mcTable td,
+.mcTable th {
   padding-left: 0.5ch;
   padding-right: 0.5ch;
   max-width: 7ch;
   min-width: 7ch;
+}
+
+.mcHeaderWeekday {
+  text-align: right;
+  margin-bottom: 1em;
+  border-bottom: 1px solid #666;
 }
 
 .mcCalendarDay {

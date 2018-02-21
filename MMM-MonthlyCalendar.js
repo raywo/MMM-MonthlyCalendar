@@ -16,44 +16,16 @@ Module.register("MMM-MonthlyCalendar", {
   },
 
   getDom: function () {
-    let wrapper = document.createElement("div");
-    let table = document.createElement("table");
-    let tBody = document.createElement("tbody");
-    let day = 1;
+    let domBuilder = new DomBuilder(this.config, this.translate);
 
-    for (let i = 0; i < 5; i++) {
-      let row = document.createElement("tr");
+    return domBuilder.getDom();
+  },
 
-      for (let j = 0; j < 7; j++) {
-        let cell = document.createElement("td");
-        let dayDiv = document.createElement("div");
-        dayDiv.className = "mcCalendarDay bright";
-        dayDiv.innerHTML = day;
-        day++;
-
-        let eventDiv = document.createElement("div");
-        eventDiv.className = "mcEvent";
-        eventDiv.innerHTML = Math.random() < 0.5 ? "ProBaug" : "&nbsp;";
-
-        let locationDiv = document.createElement("div");
-        locationDiv.className = "mcLocation dimmed";
-        locationDiv.innerHTML = "Wiesbaden";
-
-        cell.appendChild(dayDiv);
-        cell.appendChild(eventDiv);
-        cell.appendChild(locationDiv);
-        row.appendChild(cell);
-      }
-
-      tBody.appendChild(row);
-    }
-
-    table.appendChild(tBody);
-    table.className = "mcTable";
-    wrapper.appendChild(table);
-    wrapper.className = "xsmall";
-
-    return wrapper;
+  getScripts: function () {
+    return [
+      this.file("core/DomBuilder.js"),
+      "moment.js"
+    ];
   },
 
   getStyles: function () {
