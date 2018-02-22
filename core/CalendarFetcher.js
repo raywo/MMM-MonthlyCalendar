@@ -16,7 +16,7 @@ module.exports = class CalendarFetcher {
    */
   constructor(config) {
     this.config = config;
-    this.events = [];
+    this.events = {};
   }
 
 
@@ -28,26 +28,42 @@ module.exports = class CalendarFetcher {
         throw err;
       }
 
-      let jcalData = ICAL.parse(data);
-      let component = new ICAL.Component(jcalData);
-      let vevents = component.getAllSubcomponents("vevent");
-
-      vevents.forEach((vevent) => {
-        let event = new ICAL.Event(vevent);
-        let iterator = event.iterator();
-        let next = iterator.next();
-
-        while (next) {
-          // console.log("\"" + event.summary + "\" isRecurring: " + event.isRecurring() + ", startDate: " + event.startDate + ", next: " + next);
-          this.events.push(CalendarFetcher.getPlainEvent(event, next));
-
-          next = iterator.next();
-        }
-
-      });
+      this.processData(data);
     });
 
     return this.events;
+  }
+
+
+  processData(data) {
+    let jcalData = ICAL.parse(data);
+    let component = new ICAL.Component(jcalData);
+    let vevents = component.getAllSubcomponents("vevent");
+
+    vevents.forEach((vevent) => {
+      let event = new ICAL.Event(vevent);
+      let iterator = event.iterator();
+      let next = iterator.next();
+
+      while (next) {
+        this.insertEvent(event, next);
+        next = iterator.next();
+      }
+    });
+  }
+
+
+  insertEvent(event, startDate) {
+    if (event.duration.days === 1) {
+      let plainEvent = CalendarFetcher.getPlainEvent(event, startDate);
+      let dateKey = moment(startDate.toJSDate()).format("DD.MM.YYYY");
+
+      if (this.events[dateKey]) {
+        this.events[dateKey].push(plainEvent);
+      } else {
+        this.events[dateKey] = [ plainEvent ];
+      }
+    }
   }
 
 

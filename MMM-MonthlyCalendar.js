@@ -17,7 +17,7 @@ Module.register("MMM-MonthlyCalendar", {
 
   start: function () {
     this.initialized = false;
-    this.events = [];
+    this.events = {};
     this.error = {};
 
     let fetcherOptions = {
@@ -30,7 +30,7 @@ Module.register("MMM-MonthlyCalendar", {
   getDom: function () {
     let domBuilder = new DomBuilder(this.config, this.translate);
 
-    return domBuilder.getDom();
+    return domBuilder.getDom(this.events);
   },
 
   getScripts: function () {
@@ -59,18 +59,13 @@ Module.register("MMM-MonthlyCalendar", {
         // reset error object
         this.error = {};
         this.events = payload;
-
-        this.events.forEach((event) => {
-          Log.info(event);
-        });
-
         this.updateDom(2000);
 
         break;
 
       case "FETCH_ERROR":
         this.error = payload.error;
-        this.events = [];
+        this.events = {};
         this.updateDom(2000);
 
         break;
