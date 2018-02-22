@@ -5,11 +5,13 @@ class DomBuilder {
     this.config = config;
     this.translate = translate;
 
-    this.events = this.generateFakeData();
+    this.events = {};
   }
 
 
-  getDom() {
+  getDom(events) {
+    this.events = events;
+
     let wrapper = document.createElement("div");
     let table = document.createElement("table");
 
@@ -114,7 +116,7 @@ class DomBuilder {
 
     let eventDiv = document.createElement("div");
     eventDiv.className = "mcEvent";
-    eventDiv.innerHTML = this.getEventInfo(date, "name");
+    eventDiv.innerHTML = this.getEventInfo(date, "summary");
 
     let locationDiv = document.createElement("div");
     locationDiv.className = "mcLocation dimmed";
@@ -127,41 +129,22 @@ class DomBuilder {
   }
 
 
+  /**
+   * Gets events contents for an event on `date`.
+   * If there are more than one events for this day the first is chosen and returned.
+   *
+   * @param date The date on which to look for an event.
+   * @param key The info to return. Possible values are `summary`, `location` and `startDate`
+   * @returns {*} The requested info or `"&nbsp;"` if no events exists on the given date.
+   */
   getEventInfo(date, key) {
     let dateKey = date.format("DD.MM.YYYY");
 
     if (this.events[dateKey]) {
-      return this.events[dateKey][key];
+      let event = this.events[dateKey][0];
+      return event[key];
     } else {
       return "&nbsp;";
     }
-  }
-
-
-  // TODO: remove
-  generateFakeData() {
-    return {
-      "05.03.2018": {
-        name: "??ProBAUG",
-        location: "Wiesbaden"
-      },
-      "06.03.2018": {
-        name: "??ProBAUG",
-        location: "Wiesbaden"
-      },
-      "07.03.2018": {
-        name: "??ProBAUG",
-        location: "Wiesbaden"
-      },
-
-      "19.03.2018": {
-        name: "??agile Softwareentwicklung",
-        location: "Wuppertal"
-      },
-      "20.03.2018": {
-        name: "??agile Softwareentwicklung",
-        location: "Wuppertal"
-      }
-    };
   }
 }

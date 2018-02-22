@@ -18,7 +18,9 @@
     "email": "ray@skillbird.de",
     "url": "https://github.com/raywo"
   },
-  "contributors": "https://github.com/raywo/MMM-MonthlyCalendar/graphs/contributors",
+  "contributors": [
+    "https://github.com/raywo/MMM-MonthlyCalendar/graphs/contributors"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/raywo/MMM-MonthlyCalendar/issues"
@@ -28,5 +30,6 @@
     "node": ">=7"
   },
   "dependencies": {
+    "ical.js": "^1.2.2"
   }
 }
