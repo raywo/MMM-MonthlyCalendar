@@ -1,17 +1,17 @@
 "use strict";
 
 const moment = require("moment");
-const iCal = require("ical.js");
-const fs = require("fs");
+const ICAL = require("ical.js");
+const request = require("request-promise-native");
 
 
-module.exports = class CalendarFetcher {
+module.exports = class MCCalendarFetcher {
 
   /**
    *
    * @param config The configuration used for this fetcher. It has the following format:
    *        config = {
-   *          calendarFile: ""
+   *          url: ""
    *        }
    */
   constructor(config) {
@@ -21,17 +21,16 @@ module.exports = class CalendarFetcher {
 
 
   fetchCalData() {
-    let calendarFile = "modules/MMM-MonthlyCalendar/calendars/" + this.config.calendarFile;
+    let url = this.config.url;
 
-    fs.readFile(calendarFile, "utf8", (err, data) => {
-      if (err) {
+    return request(url)
+      .then((data) => {
+        this.processData(data);
+        return this.events;
+      })
+      .catch((err) => {
         throw err;
-      }
-
-      this.processData(data);
-    });
-
-    return this.events;
+      });
   }
 
 
@@ -55,7 +54,7 @@ module.exports = class CalendarFetcher {
 
   insertEvent(event, startDate) {
     if (event.duration.days === 1) {
-      let plainEvent = CalendarFetcher.getPlainEvent(event, startDate);
+      let plainEvent = MCCalendarFetcher.getPlainEvent(event, startDate);
       let dateKey = moment(startDate.toJSDate()).format("DD.MM.YYYY");
 
       if (this.events[dateKey]) {

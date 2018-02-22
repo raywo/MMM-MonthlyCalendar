@@ -1,0 +1,3 @@
+{
+  "MC_FETCH_ERROR": "Something went wrong. Is the URL you provided correct?<br>URL: <pre>{givenURL}</pre><br>Error Message: <pre>{origError}</pre>"
+}

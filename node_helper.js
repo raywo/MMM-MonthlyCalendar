@@ -1,7 +1,7 @@
 "use strict";
 
 const NodeHelper = require("node_helper");
-const CalendarFetcher = require("./core/CalendarFetcher");
+const CalendarFetcher = require("./core/MCCalendarFetcher");
 
 
 module.exports = NodeHelper.create({
@@ -12,8 +12,6 @@ module.exports = NodeHelper.create({
 
 
   socketNotificationReceived: function (notification, payload) {
-    // console.log("node_helper received notification: " + notification);
-
     switch (notification) {
       case "CREATE_FETCHER":
         this.createFetcher(payload);
@@ -35,10 +33,12 @@ module.exports = NodeHelper.create({
 
 
   fetchCalEvents: function () {
-    let events = this.fetcher.fetchCalData();
-
-    // console.log("fetched events:");
-    // console.log(events);
-    this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
+    this.fetcher.fetchCalData()
+      .then((events) => {
+        this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
+      })
+      .catch((err) => {
+        this.sendSocketNotification("FETCH_ERROR", err.message);
+      });
   }
 });

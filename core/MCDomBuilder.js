@@ -1,6 +1,6 @@
 "use strict";
 
-class DomBuilder {
+class MCDomBuilder {
   constructor(config, translate) {
     this.config = config;
     this.translate = translate;
@@ -21,6 +21,15 @@ class DomBuilder {
 
     wrapper.appendChild(table);
     wrapper.className = "xsmall";
+
+    return wrapper;
+  }
+
+
+  getSimpleDom(contentText) {
+    let wrapper = document.createElement("div");
+    wrapper.className = "xsmall dimmed";
+    wrapper.innerHTML = contentText;
 
     return wrapper;
   }

@@ -10,32 +10,40 @@ Module.register("MMM-MonthlyCalendar", {
     updatesEvery: 120,         // How often should the table be updated in s?
 
     // user definable
-    weeksInFuture: 10,
-    calendarFile: "M2CD-1-1-5D32543F-6853-432D-91B7-90FFF51E16C0.ics"
+    weeksInFuture: 4
   },
 
 
   start: function () {
     this.initialized = false;
     this.events = {};
-    this.error = {};
+    this.error = undefined;
 
     let fetcherOptions = {
-      calendarFile: this.config.calendarFile
+      url: this.config.url
     };
 
     this.sendSocketNotification("CREATE_FETCHER", fetcherOptions);
   },
 
   getDom: function () {
-    let domBuilder = new DomBuilder(this.config, this.translate);
+    let domBuilder = new MCDomBuilder(this.config, this.translate);
+
+    if (!this.initialized) {
+      return domBuilder.getSimpleDom(this.translate("LOADING"));
+    }
+
+    if (this.error) {
+      let errorMessage = this.translate("MC_FETCH_ERROR", { givenURL: this.config.url, origError: this.error });
+      return domBuilder.getSimpleDom(errorMessage);
+    }
 
     return domBuilder.getDom(this.events);
   },
 
   getScripts: function () {
     return [
-      this.file("core/DomBuilder.js"),
+      this.file("core/MCDomBuilder.js"),
       "moment.js"
     ];
   },
@@ -44,6 +52,14 @@ Module.register("MMM-MonthlyCalendar", {
     return [
       this.file("css/styles.css")
     ];
+  },
+
+
+  getTranslations: function () {
+    return {
+      // en: "translations/en.json",
+      de: "translations/de.json"
+    };
   },
 
 
@@ -57,14 +73,14 @@ Module.register("MMM-MonthlyCalendar", {
 
       case "CALENDAR_EVENTS_FETCHED":
         // reset error object
-        this.error = {};
+        this.error = undefined;
         this.events = payload;
         this.updateDom(2000);
 
         break;
 
       case "FETCH_ERROR":
-        this.error = payload.error;
+        this.error = payload;
         this.events = {};
         this.updateDom(2000);
 
