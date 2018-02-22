@@ -11,6 +11,7 @@
     "magic mirror 2",
     "smart mirror",
     "calendar",
+    "monthly",
     "module"
   ],
   "author": {
@@ -30,6 +31,8 @@
     "node": ">=7"
   },
   "dependencies": {
-    "ical.js": "^1.2.2"
+    "ical.js": "^1.2.2",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
   }
 }
