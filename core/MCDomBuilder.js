@@ -151,7 +151,7 @@ class MCDomBuilder {
 
     if (this.events[dateKey]) {
       let event = this.events[dateKey][0];
-      return event[key];
+      return event[key] ? event[key]: "&nbsp;";
     } else {
       return "&nbsp;";
     }

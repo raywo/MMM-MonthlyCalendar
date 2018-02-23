@@ -20,8 +20,10 @@ Module.register("MMM-MonthlyCalendar", {
     this.error = undefined;
 
     let fetcherOptions = {
-      url: this.config.url
+      calendars: this.config.calendars
     };
+
+    Log.info(this.config.calendars);
 
     this.sendSocketNotification("CREATE_FETCHER", fetcherOptions);
   },

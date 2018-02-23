@@ -4,7 +4,7 @@ table.mcTable {
 }
 
 .mcTable td {
-  border: 0.5px solid #444444;
+  border: 0.5px solid #666666;
 }
 
 .mcTable td,
@@ -28,7 +28,7 @@ table.mcTable {
 }
 
 .mcToday {
-  background-color: #444444;
+  background-color: #888888;
   border-radius: 1em;
   color: #ffffff;
   line-height: 1.1em;

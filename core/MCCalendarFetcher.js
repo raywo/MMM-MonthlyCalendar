@@ -11,7 +11,14 @@ module.exports = class MCCalendarFetcher {
    *
    * @param config The configuration used for this fetcher. It has the following format:
    *        config = {
-   *          url: ""
+   *          calendars: [
+   *            {
+   *              url: ""
+   *            },
+   *            {
+   *              url: ""
+   *            }
+   *          ]
    *        }
    */
   constructor(config) {
@@ -21,16 +28,31 @@ module.exports = class MCCalendarFetcher {
 
 
   fetchCalData() {
-    let url = this.config.url;
+    let calendars = this.config.calendars;
 
-    return request(url)
-      .then((data) => {
-        this.processData(data);
-        return this.events;
-      })
-      .catch((err) => {
-        throw err;
-      });
+    calendars.forEach((calendar) => {
+      calendar.fetched = false;
+      console.log(calendar);
+
+      request(calendar.url)
+        .then((data) => {
+          this.processData(data);
+          calendar.fetched = true;
+        })
+        .catch((err) => {
+          calendar.fetched = true;
+          calendar.error = err.message;
+
+          console.log(err.message);
+        });
+
+    });
+
+    while (!this.allRequestsCompleted(calendars)) { /* wait for all requests to complete */ }
+
+    console.log("all fetched");
+
+    return this.events;
   }
 
 
@@ -72,5 +94,15 @@ module.exports = class MCCalendarFetcher {
       location: event.location,
       summary: event.summary
     };
+  }
+
+  allRequestsCompleted(calendars) {
+    calendars.forEach((calendar) => {
+      if (!calendar.fetched) {
+        return false;
+      }
+    });
+
+    return true;
   }
 };

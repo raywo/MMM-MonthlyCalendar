@@ -7,7 +7,7 @@ const CalendarFetcher = require("./core/MCCalendarFetcher");
 module.exports = NodeHelper.create({
 
   start: function () {
-
+    this.fetchers = undefined;
   },
 
 
@@ -25,20 +25,22 @@ module.exports = NodeHelper.create({
 
 
   createFetcher: function (config) {
-    // TODO: Only create new fetcher if there is no fetcher yet. Maybe enable more than one fetcher.
     this.fetcher = new CalendarFetcher(config);
-
     this.sendSocketNotification("FETCHER_INITIALIZED");
+
+    console.log("[" + this.name + "] created new calendar fetcher");
   },
 
 
   fetchCalEvents: function () {
-    this.fetcher.fetchCalData()
-      .then((events) => {
-        this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
-      })
-      .catch((err) => {
-        this.sendSocketNotification("FETCH_ERROR", err.message);
-      });
+  //   this.fetcher.fetchCalData()
+  //     .then((events) => {
+  //       this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
+  //     })
+  //     .catch((err) => {
+  //       this.sendSocketNotification("FETCH_ERROR", err.message);
+  //     });
+    let events = this.fetcher.fetchCalData();
+    this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
   }
 });
