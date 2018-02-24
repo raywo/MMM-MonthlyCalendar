@@ -1,0 +1,38 @@
+{
+  "name": "MMM-MonthlyCalendar",
+  "version": "0.0.1",
+  "description": "A MagicMirror module displaying calender events per month.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raywo/MMM-MonthlyCalendar"
+  },
+  "keywords": [
+    "magic mirror",
+    "magic mirror 2",
+    "smart mirror",
+    "calendar",
+    "monthly",
+    "module"
+  ],
+  "author": {
+    "name": "raywo",
+    "email": "ray@skillbird.de",
+    "url": "https://github.com/raywo"
+  },
+  "contributors": [
+    "https://github.com/raywo/MMM-MonthlyCalendar/graphs/contributors"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/raywo/MMM-MonthlyCalendar/issues"
+  },
+  "homepage": "https://github.com/raywo/MMM-MonthlyCalendar",
+  "engines": {
+    "node": ">=7"
+  },
+  "dependencies": {
+    "ical.js": "^1.2.2",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
