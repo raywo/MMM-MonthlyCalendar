@@ -15,33 +15,42 @@ Module.register("MMM-MonthlyCalendar", {
 
 
   start: function () {
+    Log.info("Starting module: " + this.name );
+
     this.initialized = false;
     this.events = {};
-    this.error = undefined;
+    this.fetchTracker = {};   // Keeps track of the last used fetchID for each calendar.
+    this.errors = {};
+    this.currentFetchID = undefined;
 
-    let fetcherOptions = {
-      calendars: this.config.calendars
-    };
+    this.config.calendars.forEach((calendar) => {
+      this.fetchTracker[calendar.url] = this.currentFetchID;
+    });
 
-    Log.info(this.config.calendars);
-
-    this.sendSocketNotification("CREATE_FETCHER", fetcherOptions);
+    this.startFetchingLoop(this.config.updatesEvery);
   },
 
+
   getDom: function () {
-    let domBuilder = new MCDomBuilder(this.config, this.translate);
+    let domBuilder = new MCDomBuilder(this.config);
 
     if (!this.initialized) {
       return domBuilder.getSimpleDom(this.translate("LOADING"));
     }
 
-    if (this.error) {
-      let errorMessage = this.translate("MC_FETCH_ERROR", { givenURL: this.config.url, origError: this.error });
+    let errorKeys = Object.keys(this.errors);
+
+    if (errorKeys.length > 0) {
+      let givenURLs = errorKeys.join("<br>");
+      let messages = errorKeys.map((key) => this.errors[key].message).join("<br>");
+      let errorMessage = this.translate("MC_FETCH_ERROR", { givenURL: givenURLs, origError: messages });
+
       return domBuilder.getSimpleDom(errorMessage);
     }
 
     return domBuilder.getDom(this.events);
   },
+
 
   getScripts: function () {
     return [
@@ -49,6 +58,7 @@ Module.register("MMM-MonthlyCalendar", {
       "moment.js"
     ];
   },
+
 
   getStyles: function () {
     return [
@@ -59,7 +69,7 @@ Module.register("MMM-MonthlyCalendar", {
 
   getTranslations: function () {
     return {
-      // en: "translations/en.json",
+      en: "translations/en.json",
       de: "translations/de.json"
     };
   },
@@ -67,24 +77,28 @@ Module.register("MMM-MonthlyCalendar", {
 
   socketNotificationReceived: function (notification, payload) {
     switch (notification) {
-      case "FETCHER_INITIALIZED":
-        this.initialized = true;
-        this.startFetchingLoop(this.config.updatesEvery);
-
-        break;
-
       case "CALENDAR_EVENTS_FETCHED":
-        // reset error object
-        this.error = undefined;
-        this.events = payload;
-        this.updateDom(2000);
+        this.initialized = true;
+        // reset errors object
+        this.errors = {};
+
+        if (payload.fetchID === this.currentFetchID) {
+          this.mergeEvents(payload.events);
+          this.fetchTracker[payload.calendar.url] = payload.fetchID;
+          this.scheduleDomUpdate(1000);
+        }
 
         break;
 
       case "FETCH_ERROR":
-        this.error = payload;
-        this.events = {};
-        this.updateDom(2000);
+        Log.error("(" + payload.fetchID + ") An error occured during fetching for calendar: ");
+        Log.error(payload.calendar);
+        Log.error("\nError message: " + payload.error.message);
+
+        this.initialized = true;
+        this.errors[payload.calendar.url] = payload.error;
+        this.fetchTracker[payload.calendar.url] = payload.fetchID;
+        this.scheduleDomUpdate(1000);
 
         break;
     }
@@ -93,11 +107,72 @@ Module.register("MMM-MonthlyCalendar", {
 
   startFetchingLoop: function(interval) {
     // start immediately ...
-    this.sendSocketNotification("FETCH_CALENDAR_EVENTS");
+    this.sendStartFetching();
 
     // ... and then repeat in the given interval
     setInterval(() => {
-      this.sendSocketNotification("FETCH_CALENDAR_EVENTS");
+      this.sendStartFetching();
     }, interval * 1000);
+  },
+
+
+  sendStartFetching: function () {
+    this.currentFetchID = this.generateFetchID();
+    this.events = {};
+
+    let payload = {
+      calendars: this.config.calendars,
+      fetchID: this.currentFetchID
+    };
+
+    this.sendSocketNotification("FETCH_CALENDAR_EVENTS", payload);
+  },
+
+
+  generateFetchID: function() {
+    let dt = new Date().getTime();
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      let r = (dt + Math.random() * 16) % 16 | 0;
+      dt = Math.floor(dt / 16);
+      return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  },
+
+
+  mergeEvents: function(newEvents) {
+    Object.keys(newEvents).forEach((key) => {
+      if (this.events[key]) {
+        this.events[key] = this.events[key].concat(newEvents[key]);
+        this.events[key].sort(this.sortByPriority);
+      } else {
+        this.events[key] = newEvents[key];
+      }
+    });
+  },
+
+
+  scheduleDomUpdate: function(interval) {
+    if (this.allFetchesDone()) {
+      this.updateDom(interval);
+    }
+  },
+
+
+  allFetchesDone: function () {
+    let keys = Object.keys(this.fetchTracker);
+
+    for (let i = 0; i < keys.length; i++) {
+      if (this.fetchTracker[keys[i]] !== this.currentFetchID) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+
+  sortByPriority: function(leftElem, rightElem) {
+    return leftElem.priority - rightElem.priority;
   }
 });

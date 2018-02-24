@@ -7,40 +7,47 @@ const CalendarFetcher = require("./core/MCCalendarFetcher");
 module.exports = NodeHelper.create({
 
   start: function () {
-    this.fetchers = undefined;
+    this.fetchers = {};
   },
 
 
   socketNotificationReceived: function (notification, payload) {
     switch (notification) {
-      case "CREATE_FETCHER":
-        this.createFetcher(payload);
-        break;
-
       case "FETCH_CALENDAR_EVENTS":
-        this.fetchCalEvents();
+        this.fetchCalEvents(payload.calendars, payload.fetchID);
         break;
     }
   },
 
 
-  createFetcher: function (config) {
-    this.fetcher = new CalendarFetcher(config);
-    this.sendSocketNotification("FETCHER_INITIALIZED");
+  fetchCalEvents: function (calendars, fetchID) {
+    calendars.forEach((calendar) => {
+      let fetcher = this.getFetcher(calendar.url);
 
-    console.log("[" + this.name + "] created new calendar fetcher");
+      fetcher.fetchCalData(fetchID, calendar.priority)
+        .then((response) => {
+          response.calendar = calendar;
+          this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", response);
+        })
+        .catch((err) => {
+          let payload = {
+            fetchID: fetchID,
+            calendar: calendar,
+            error: err
+          };
+
+          this.sendSocketNotification("FETCH_ERROR", payload);
+        });
+    });
   },
 
 
-  fetchCalEvents: function () {
-  //   this.fetcher.fetchCalData()
-  //     .then((events) => {
-  //       this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
-  //     })
-  //     .catch((err) => {
-  //       this.sendSocketNotification("FETCH_ERROR", err.message);
-  //     });
-    let events = this.fetcher.fetchCalData();
-    this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
+  getFetcher(url) {
+    if (!this.fetchers[url]) {
+      this.fetchers[url] = new CalendarFetcher(url);
+      console.log("[" + this.name + "] created new calendar fetcher for url: " + url);
+    }
+
+    return this.fetchers[url];
   }
 });
