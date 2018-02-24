@@ -9,24 +9,25 @@ module.exports = class MCCalendarFetcher {
 
   /**
    *
-   * @param config The configuration used for this fetcher. It has the following format:
-   *        config = {
-   *          url: ""
-   *        }
+   * @param url The url this fetcher is responsible for.
    */
-  constructor(config) {
-    this.config = config;
+  constructor(url) {
+    this.url = url;
     this.events = {};
   }
 
 
-  fetchCalData() {
-    let url = this.config.url;
+  fetchCalData(fetchID, calendarPriority) {
+    this.events = {};
 
-    return request(url)
+    return request(this.url)
       .then((data) => {
-        this.processData(data);
-        return this.events;
+        this.processData(data, calendarPriority);
+
+        return {
+          fetchID: fetchID,
+          events: this.events
+        };
       })
       .catch((err) => {
         throw err;
@@ -34,7 +35,7 @@ module.exports = class MCCalendarFetcher {
   }
 
 
-  processData(data) {
+  processData(data, calendarPriority) {
     let jcalData = ICAL.parse(data);
     let component = new ICAL.Component(jcalData);
     let vevents = component.getAllSubcomponents("vevent");
@@ -45,29 +46,30 @@ module.exports = class MCCalendarFetcher {
       let next = iterator.next();
 
       while (next) {
-        this.insertEvent(event, next);
+        this.insertEvent(event, next, calendarPriority);
         next = iterator.next();
       }
     });
   }
 
 
-  insertEvent(event, startDate) {
+  insertEvent(event, startDate, calendarPriority) {
     if (event.duration.days === 1) {
-      let plainEvent = MCCalendarFetcher.getPlainEvent(event, startDate);
+      let plainEvent = MCCalendarFetcher.getPlainEvent(event, startDate, calendarPriority);
       let dateKey = moment(startDate.toJSDate()).format("DD.MM.YYYY");
 
       if (this.events[dateKey]) {
         this.events[dateKey].push(plainEvent);
       } else {
-        this.events[dateKey] = [ plainEvent ];
+        this.events[dateKey] = [plainEvent];
       }
     }
   }
 
 
-  static getPlainEvent(event, startDate) {
+  static getPlainEvent(event, startDate, calendarPriority) {
     return {
+      calendarPriority: calendarPriority,
       startDate: startDate.toJSDate(),
       location: event.location,
       summary: event.summary

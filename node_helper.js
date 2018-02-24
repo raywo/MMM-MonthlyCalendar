@@ -7,38 +7,47 @@ const CalendarFetcher = require("./core/MCCalendarFetcher");
 module.exports = NodeHelper.create({
 
   start: function () {
-
+    this.fetchers = {};
   },
 
 
   socketNotificationReceived: function (notification, payload) {
     switch (notification) {
-      case "CREATE_FETCHER":
-        this.createFetcher(payload);
-        break;
-
       case "FETCH_CALENDAR_EVENTS":
-        this.fetchCalEvents();
+        this.fetchCalEvents(payload.calendars, payload.fetchID);
         break;
     }
   },
 
 
-  createFetcher: function (config) {
-    // TODO: Only create new fetcher if there is no fetcher yet. Maybe enable more than one fetcher.
-    this.fetcher = new CalendarFetcher(config);
+  fetchCalEvents: function (calendars, fetchID) {
+    calendars.forEach((calendar) => {
+      let fetcher = this.getFetcher(calendar.url);
 
-    this.sendSocketNotification("FETCHER_INITIALIZED");
+      fetcher.fetchCalData(fetchID, calendar.priority)
+        .then((response) => {
+          response.calendar = calendar;
+          this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", response);
+        })
+        .catch((err) => {
+          let payload = {
+            fetchID: fetchID,
+            calendar: calendar,
+            error: err
+          };
+
+          this.sendSocketNotification("FETCH_ERROR", payload);
+        });
+    });
   },
 
 
-  fetchCalEvents: function () {
-    this.fetcher.fetchCalData()
-      .then((events) => {
-        this.sendSocketNotification("CALENDAR_EVENTS_FETCHED", events);
-      })
-      .catch((err) => {
-        this.sendSocketNotification("FETCH_ERROR", err.message);
-      });
+  getFetcher(url) {
+    if (!this.fetchers[url]) {
+      this.fetchers[url] = new CalendarFetcher(url);
+      console.log("[" + this.name + "] created new calendar fetcher for url: " + url);
+    }
+
+    return this.fetchers[url];
   }
 });

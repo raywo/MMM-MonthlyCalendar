@@ -1,9 +1,8 @@
 "use strict";
 
 class MCDomBuilder {
-  constructor(config, translate) {
+  constructor(config) {
     this.config = config;
-    this.translate = translate;
 
     this.events = {};
   }
@@ -45,7 +44,13 @@ class MCDomBuilder {
 
   getTableBody() {
     let tBody = document.createElement("tbody");
+    this.appendTableRows(tBody);
 
+    return tBody;
+  }
+
+
+  appendTableRows(tBody) {
     let today = moment();
 
     for (let i = 0; i < this.config.weeksInFuture; i++) {
@@ -55,8 +60,6 @@ class MCDomBuilder {
       let row = this.getCalendarRow(startDate);
       tBody.appendChild(row);
     }
-
-    return tBody;
   }
 
 
@@ -151,7 +154,7 @@ class MCDomBuilder {
 
     if (this.events[dateKey]) {
       let event = this.events[dateKey][0];
-      return event[key];
+      return event[key] ? event[key]: "&nbsp;";
     } else {
       return "&nbsp;";
     }
