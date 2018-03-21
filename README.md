@@ -1,6 +1,5 @@
 # MMM-MonthlyCalendar
 
-<<<<<<< .merge_file_P83Hma
 MMM-MonthlyCalendar is a module for the [MagicMirror](https://github.com/MichMich/MagicMirror) project by [Michael Teeuw](https://github.com/MichMich).
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/2742abc792b88536f6e2/maintainability)](https://codeclimate.com/github/raywo/MMM-MonthlyCalendar/maintainability) 
