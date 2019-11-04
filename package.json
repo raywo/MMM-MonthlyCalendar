@@ -33,6 +33,6 @@
   "dependencies": {
     "ical.js": "^1.2.2",
     "request": "^2.83.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.8"
   }
 }
